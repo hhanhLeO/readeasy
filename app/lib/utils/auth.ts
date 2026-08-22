@@ -2,6 +2,10 @@ import 'server-only';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
+import { db } from '@/app/lib/db';
+import { users } from '@/app/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 /* Password utils */
 const SALT_ROUNDS = 10;
@@ -70,3 +74,17 @@ export async function clearSession() {
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE_NAME);
 }
+
+/* Get current user */
+export const getCurrentUser = cache(async () => {
+  const session = await getSession();
+  if (!session) return null;
+
+  const [user] = await db
+    .select({ id: users.id, username: users.username, email: users.email })
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
+
+  return user ?? null;
+});
