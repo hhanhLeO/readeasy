@@ -66,6 +66,10 @@ body {
   @apply btn bg-accent text-white hover:bg-accent-dark hover:shadow-[0_4px_10px_rgba(13,148,136,0.25)] hover:-translate-y-px;
 }
 
+@utility btn-secondary {
+  @apply btn border border-border-strong bg-transparent text-foreground hover:bg-bg-tertiary;
+}
+
 @utility btn-ghost {
   @apply btn bg-transparent text-accent hover:bg-accent-tint;
 }
@@ -76,4 +80,12 @@ body {
 
 @utility btn-lg {
   @apply px-7 py-3.5 text-[15px];
+}
+
+@utility error-text {
+  @apply mt-1 text-xs text-danger;
+}
+
+@utility input {
+  @apply block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-foreground placeholder:text-text-tertiary transition-[border-color,box-shadow] duration-150 focus:border-accent focus:shadow-[0_0_0_3px_rgba(13,148,136,0.12)] focus:outline-none;
 }
