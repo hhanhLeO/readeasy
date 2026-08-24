@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, type SubmitEvent } from 'react';
+import { useState, useTransition, type SubmitEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, FileText, FileUp, ArrowRight } from 'lucide-react';
+import { createDocumentFromTextAction } from '../actions';
 
 const INPUT_MODES = [
   { id: 'text', label: 'Paste text', icon: FileText, soon: false },
@@ -20,11 +21,20 @@ const HELPER_TEXT: Record<Mode, string> = {
 
 export function ReadingInput() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>('url');
+  const [mode, setMode] = useState<Mode>('text');
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
+  const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  function handleTextSubmit(e: SubmitEvent) {
+    e.preventDefault();
+    if (!text.trim() || isPending) return;
+    startTransition(async () => {
+      await createDocumentFromTextAction(text);
+    });
+  }
+
+  function handleUrlSubmit(e: SubmitEvent) {
     e.preventDefault();
     router.push('/read');
   }
@@ -67,7 +77,7 @@ export function ReadingInput() {
       {/* Text Mode */}
       {mode === 'text' && (
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleTextSubmit}
           className="rounded-xl border border-border bg-white p-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
         >
           <textarea
@@ -91,7 +101,7 @@ export function ReadingInput() {
       {/* URL Mode */}
       {mode === 'url' && (
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleUrlSubmit}
           className="flex items-center rounded-xl border border-border bg-white p-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
         >
           <div className="flex items-center px-3 text-text-tertiary">

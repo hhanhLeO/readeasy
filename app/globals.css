@@ -89,3 +89,11 @@ body {
 @utility input {
   @apply block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-foreground placeholder:text-text-tertiary transition-[border-color,box-shadow] duration-150 focus:border-accent focus:shadow-[0_0_0_3px_rgba(13,148,136,0.12)] focus:outline-none;
 }
+
+@utility word {
+  @apply cursor-pointer rounded-sm border-b-2 border-dotted border-transparent transition-colors duration-100 hover:border-text-tertiary hover:bg-bg-secondary;
+}
+
+@utility word-active {
+  @apply cursor-pointer rounded-sm border-b-2 border-solid border-accent bg-accent-light transition-colors duration-100;
+}
