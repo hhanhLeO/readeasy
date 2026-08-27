@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/app/lib/auth/dal';
 import { redirect } from 'next/navigation';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const TITLE_MAX_LENGTH = 80;
 
@@ -51,4 +52,35 @@ export async function createDocumentFromTextAction(text: string) {
     .returning({ id: documents.id });
 
   redirect(`/read/${doc.id}`);
+}
+
+export async function updateDocumentTitleAction(
+  documentId: string,
+  title: string,
+) {
+  const trimmed = title.trim();
+  if (!trimmed) {
+    throw new Error('Title cannot be empty');
+  }
+
+  const user = await getCurrentUser();
+  if (!user) redirect('/login');
+
+  const [doc] = await db
+    .select({ userId: documents.userId })
+    .from(documents)
+    .where(eq(documents.id, documentId))
+    .limit(1);
+  if (!doc || doc.userId !== user.id) {
+    throw new Error('Not found');
+  }
+
+  const finalTitle = truncateAtWordBoundary(trimmed, TITLE_MAX_LENGTH);
+
+  await db
+    .update(documents)
+    .set({ title: finalTitle })
+    .where(eq(documents.id, documentId));
+
+  return finalTitle;
 }

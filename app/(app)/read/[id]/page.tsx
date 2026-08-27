@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
 import { ReadingView } from './components/reading-view';
+import { EditableTitle } from './components/editable-title';
 
 function estimateMinutes(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
@@ -53,9 +54,7 @@ export default async function ReadPage({
         {estimateMinutes(doc.content)} min read
       </div>
 
-      <h1 className="mb-8 text-pretty font-serif text-[32px] font-bold leading-[1.15] tracking-[-0.01em] text-foreground">
-        {doc.title}
-      </h1>
+      <EditableTitle documentId={doc.id} initialTitle={doc.title} />
 
       <ReadingView documentId={doc.id} paragraphs={paragraphs} />
     </div>
