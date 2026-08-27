@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/app/lib/utils/auth';
+import { getCurrentUser } from '@/app/lib/auth/dal';
 import { Navbar } from './components/navbar';
 import { Sidebar } from './components/sidebar';
 

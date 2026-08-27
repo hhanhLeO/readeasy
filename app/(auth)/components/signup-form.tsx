@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { SignupState, signup } from '../action';
+import { SignupState, signup } from '../actions';
 import { SubmitButton } from './submit-button';
 import { Eye, EyeOff } from 'lucide-react';
 

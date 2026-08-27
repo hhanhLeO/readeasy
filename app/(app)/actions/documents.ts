@@ -1,9 +1,9 @@
 'use server';
 
-import { getCurrentUser } from '@/app/lib/utils/auth';
+import { getCurrentUser } from '@/app/lib/auth/dal';
 import { redirect } from 'next/navigation';
 import { db } from '@/app/lib/db';
-import { documents, words } from '@/app/lib/db/schema';
+import { documents } from '@/app/lib/db/schema';
 
 const TITLE_MAX_LENGTH = 80;
 
@@ -51,30 +51,4 @@ export async function createDocumentFromTextAction(text: string) {
     .returning({ id: documents.id });
 
   redirect(`/read/${doc.id}`);
-}
-
-export async function saveWordAction({
-  documentId,
-  word,
-  contextSentence,
-  meaning,
-  phonetic,
-}: {
-  documentId: string;
-  word: string;
-  contextSentence: string;
-  meaning: string;
-  phonetic?: string;
-}) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error('Unauthorized');
-
-  await db.insert(words).values({
-    userId: user.id,
-    documentId,
-    word,
-    contextSentence,
-    meaning,
-    phonetic: phonetic || null,
-  });
 }

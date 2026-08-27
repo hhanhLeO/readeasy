@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { Check, X, BookmarkPlus } from 'lucide-react';
-import { saveWordAction } from '../actions';
-import type { WordLookup } from '@/app/lib/openai/word-lookup';
+import { saveWordAction } from '@/app/(app)/actions/words';
+import type { WordLookup } from '@/app/lib/dictionary/word-lookup';
 
 export function WordPopup({
   word,

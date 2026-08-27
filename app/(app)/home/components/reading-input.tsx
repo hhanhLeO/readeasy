@@ -3,7 +3,7 @@
 import { useState, useTransition, type SubmitEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, FileText, FileUp, ArrowRight } from 'lucide-react';
-import { createDocumentFromTextAction } from '../actions';
+import { createDocumentFromTextAction } from '@/app/(app)/actions/documents';
 
 const INPUT_MODES = [
   { id: 'text', label: 'Paste text', icon: FileText, soon: false },

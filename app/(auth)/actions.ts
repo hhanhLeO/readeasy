@@ -5,12 +5,8 @@ import { redirect } from 'next/navigation';
 import { db } from '@/app/lib/db';
 import { NewUser, users } from '@/app/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import {
-  hashPassword,
-  verifyPassword,
-  createSession,
-  clearSession,
-} from '@/app/lib/utils/auth';
+import { hashPassword, verifyPassword } from '@/app/lib/auth/password';
+import { createSession, clearSession } from '@/app/lib/auth/session';
 
 const signupSchema = z.object({
   username: z

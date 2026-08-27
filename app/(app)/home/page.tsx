@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { eq, desc } from 'drizzle-orm';
-import { getCurrentUser } from '@/app/lib/utils/auth';
+import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
 import { CEFRBadge } from '../components/cefr-badge';
 import { ArticleCard, type Article } from '../components/article-card';
-import { ReadingInput } from '../components/reading-input';
-import { StreakRing } from '../components/streak-ring';
+import { ReadingInput } from './components/reading-input';
+import { StreakRing } from './components/streak-ring';
 
 export const metadata: Metadata = {
   title: 'Home - ReadEasy AI',

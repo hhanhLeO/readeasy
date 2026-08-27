@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { eq } from 'drizzle-orm';
-import { getCurrentUser } from '@/app/lib/utils/auth';
+import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
-import { ReadingView } from '../../components/reading-view';
+import { ReadingView } from './components/reading-view';
 
 function estimateMinutes(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;

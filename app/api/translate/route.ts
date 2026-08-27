@@ -1,5 +1,5 @@
-import { lookupWord, WordLookup } from '@/app/lib/openai/word-lookup';
-import { getCurrentUser } from '@/app/lib/utils/auth';
+import { lookupWord, WordLookup } from '@/app/lib/dictionary/word-lookup';
+import { getCurrentUser } from '@/app/lib/auth/dal';
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
