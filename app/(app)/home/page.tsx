@@ -9,6 +9,7 @@ import { CEFRBadge } from '../components/cefr-badge';
 import { ArticleCard, type Article } from '../components/article-card';
 import { ReadingInput } from './components/reading-input';
 import { StreakRing } from './components/streak-ring';
+import { estimateMinutes } from '../lib/format';
 
 export const metadata: Metadata = {
   title: 'Home - ReadEasy AI',
@@ -49,11 +50,6 @@ const RECOMMENDED: Article[] = [
     cover: 'linear-gradient(135deg, #B45309 0%, #1E293B 100%)',
   },
 ];
-
-function estimateMinutes(content: string) {
-  const words = content.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 200));
-}
 
 function greeting() {
   const hour = new Date().getHours();
