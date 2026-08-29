@@ -23,3 +23,12 @@ export type WordEntry = {
   nextReviewAt: number;
   createdAt: number;
 };
+
+export type ReviewCard = {
+  reviewId: string;
+  word: string;
+  phonetic: string | null;
+  meaning: string;
+  contextSentence: string;
+  documentTitle: string | null;
+};
