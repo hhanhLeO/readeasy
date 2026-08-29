@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "../../components/article-card";
-import type { Article } from "../../lib/type";
+import type { Article } from "../../lib/types";
 
 const ARTICLE_FILTERS = [
   "All",

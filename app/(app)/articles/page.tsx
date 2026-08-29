@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/app/lib/auth/dal";
 import { db } from "@/app/lib/db";
 import { documents } from "@/app/lib/db/schema";
 import { estimateMinutes } from "../lib/format";
-import type { Article } from "../lib/type";
+import type { Article } from "../lib/types";
 import { LibraryBrowser } from "./components/articles-browser";
 
 export const metadata: Metadata = {
