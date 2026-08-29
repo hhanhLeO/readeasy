@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { and, asc, eq, lte } from "drizzle-orm";
+import { and, asc, eq, lt } from "drizzle-orm";
 import { getCurrentUser } from "@/app/lib/auth/dal";
 import { db } from "@/app/lib/db";
 import { words, reviews, documents } from "@/app/lib/db/schema";
@@ -12,6 +12,12 @@ export const metadata: Metadata = {
 
 export default async function ReviewPage() {
   const user = await getCurrentUser();
+
+  // Matches reviewStatus()'s calendar-day bucketing (app/(app)/lib/format.ts):
+  // a word due anytime today should already show up here, not just once its
+  // exact next_review_at timestamp has passed.
+  const startOfTomorrow = new Date();
+  startOfTomorrow.setHours(24, 0, 0, 0);
 
   const rows = user
     ? await db
@@ -26,7 +32,7 @@ export default async function ReviewPage() {
         .from(reviews)
         .innerJoin(words, eq(words.id, reviews.wordId))
         .leftJoin(documents, eq(words.documentId, documents.id))
-        .where(and(eq(words.userId, user.id), lte(reviews.nextReviewAt, new Date())))
+        .where(and(eq(words.userId, user.id), lt(reviews.nextReviewAt, startOfTomorrow)))
         .orderBy(asc(reviews.nextReviewAt))
     : [];
 
