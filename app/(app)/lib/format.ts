@@ -13,16 +13,17 @@ export function reviewStatus(
   nextReviewAt: Date,
   repetitions: number,
 ): { status: WordStatus; label: string } {
-  const startOfToday = new Date().setHours(0, 0, 0, 0);
-  const dueTime = nextReviewAt.getTime();
-
   if (repetitions >= MASTERED_REPETITIONS) {
     return { status: "mastered", label: "Mastered" };
   }
-  if (dueTime < startOfToday) return { status: "overdue", label: "Overdue" };
-  if (dueTime < startOfToday + DAY_MS) return { status: "due", label: "Due today" };
+  
+  // Truncate to midnight so time-of-day in nextReviewAt can't skew the day count.
+  const startOfToday = new Date().setHours(0, 0, 0, 0);
+  const startOfDueDay = new Date(nextReviewAt).setHours(0, 0, 0, 0);
+  const days = Math.round((startOfDueDay - startOfToday) / DAY_MS);
 
-  const days = Math.round((dueTime - startOfToday) / DAY_MS);
+  if (days < 0) return { status: "overdue", label: "Overdue" };
+  if (days === 0) return { status: "due", label: "Due today" };
   if (days === 1) return { status: "scheduled", label: "Tomorrow" };
   if (days < 7) return { status: "scheduled", label: `In ${days} days` };
   if (days < 14) return { status: "scheduled", label: "In a week" };
