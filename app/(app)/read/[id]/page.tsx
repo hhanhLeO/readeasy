@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
-import { ReadingView } from './components/reading-view';
+import { EditableContent } from './components/editable-content';
 import { EditableTitle } from './components/editable-title';
 
 function estimateMinutes(content: string) {
@@ -43,11 +43,6 @@ export default async function ReadPage({
   const doc = await getDocument(id);
   if (!doc || doc.userId !== user.id) notFound();
 
-  const paragraphs = doc.content
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-
   return (
     <div className="mx-auto max-w-[680px] px-12 py-12">
       <div className="mb-4 text-[13px] text-text-secondary">
@@ -56,7 +51,7 @@ export default async function ReadPage({
 
       <EditableTitle documentId={doc.id} initialTitle={doc.title} />
 
-      <ReadingView documentId={doc.id} paragraphs={paragraphs} />
+      <EditableContent documentId={doc.id} initialContent={doc.content} />
     </div>
   );
 }

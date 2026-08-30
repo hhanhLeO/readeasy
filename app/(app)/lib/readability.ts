@@ -74,11 +74,24 @@ export async function extractArticleFromUrl(
   // Readability's `content` is cleaned-up HTML, not plain text — re-parse it
   // and pull block-level text so paragraphs stay separated the same way
   // pasted text is (split on blank lines), matching what /read/[id] expects.
+  // Headings get a markdown-style `#` prefix so the reading view can tell
+  // them apart from body paragraphs without changing how content is stored.
+  const HEADING_PREFIX: Record<string, string> = {
+    H1: '# ',
+    H2: '## ',
+    H3: '### ',
+    H4: '#### ',
+  };
   const articleDom = new JSDOM(article.content);
   const content = Array.from(
     articleDom.window.document.querySelectorAll('p, li, h1, h2, h3, h4, blockquote'),
   )
-    .map((el) => el.textContent?.replace(/\s+/g, ' ').trim() ?? '')
+    .map((el) => {
+      const text = el.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+      if (!text) return '';
+      const prefix = HEADING_PREFIX[el.tagName];
+      return prefix ? prefix + text : text;
+    })
     .filter(Boolean)
     .join('\n\n');
 

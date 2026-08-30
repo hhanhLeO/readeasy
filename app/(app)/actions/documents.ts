@@ -55,6 +55,36 @@ export async function createDocumentFromTextAction(text: string) {
   redirect(`/read/${doc.id}`);
 }
 
+export async function createDocumentFromUrlAction(
+  url: string,
+): Promise<{ error: string } | void> {
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return { error: 'Paste a URL first.' };
+
+  const user = await getCurrentUser();
+  if (!user) redirect('/signin');
+
+  let article: { title: string; content: string };
+  try {
+    article = await extractArticleFromUrl(trimmedUrl);
+  } catch (err) {
+    if (err instanceof ExtractError) return { error: err.message };
+    return { error: "Something went wrong reading that page. Try pasting the text instead." };
+  }
+
+  const [doc] = await db
+    .insert(documents)
+    .values({
+      userId: user.id,
+      title: truncateAtWordBoundary(article.title, TITLE_MAX_LENGTH),
+      sourceUrl: trimmedUrl,
+      content: article.content,
+    })
+    .returning({ id: documents.id });
+
+  redirect(`/read/${doc.id}`);
+}
+
 export async function updateDocumentTitleAction(
   documentId: string,
   title: string,
@@ -86,32 +116,27 @@ export async function updateDocumentTitleAction(
   return finalTitle;
 }
 
-export async function createDocumentFromUrlAction(
-  url: string,
-): Promise<{ error: string } | void> {
-  const trimmedUrl = url.trim();
-  if (!trimmedUrl) return { error: 'Paste a URL first.' };
+export async function updateDocumentContentAction(
+  documentId: string,
+  content: string,
+) {
+  const trimmed = content.trim();
+  if (!trimmed) throw new Error('Content cannot be empty');
 
   const user = await getCurrentUser();
   if (!user) redirect('/signin');
 
-  let article: { title: string; content: string };
-  try {
-    article = await extractArticleFromUrl(trimmedUrl);
-  } catch (err) {
-    if (err instanceof ExtractError) return { error: err.message };
-    return { error: "Something went wrong reading that page. Try pasting the text instead." };
-  }
-
   const [doc] = await db
-    .insert(documents)
-    .values({
-      userId: user.id,
-      title: truncateAtWordBoundary(article.title, TITLE_MAX_LENGTH),
-      sourceUrl: trimmedUrl,
-      content: article.content,
-    })
-    .returning({ id: documents.id });
+    .select({ userId: documents.userId })
+    .from(documents)
+    .where(eq(documents.id, documentId))
+    .limit(1);
+  if (!doc || doc.userId !== user.id) throw new Error('Not found');
 
-  redirect(`/read/${doc.id}`);
+  await db
+    .update(documents)
+    .set({ content: trimmed })
+    .where(eq(documents.id, documentId));
+
+  return trimmed;
 }

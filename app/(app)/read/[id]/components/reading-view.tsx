@@ -30,15 +30,43 @@ function findSentence(paragraphText: string, selected: string): string {
   return sentences.find((s) => s.includes(selected)) ?? paragraphText;
 }
 
+// Block-level tags a paragraph can render as — see parseBlock() below.
+// Kept in sync so word/phrase lookup can find the right containing block.
+const BLOCK_TAGS = new Set(['P', 'H2', 'H3', 'H4', 'H5']);
+
 function findParagraphText(node: Node | null): string {
   let current: Node | null = node;
   while (current) {
-    if (current instanceof HTMLElement && current.tagName === 'P') {
+    if (current instanceof HTMLElement && BLOCK_TAGS.has(current.tagName)) {
       return current.textContent ?? '';
     }
     current = current.parentNode;
   }
   return '';
+}
+
+// URL-imported articles mark headings with a markdown-style `#`/`##`/`###`/`####`
+// prefix (added in app/lib/extract/readability.ts) so they render distinctly
+// from body paragraphs without needing a richer content format.
+const HEADING_PATTERN = /^(#{1,4})\s+(.*)$/;
+const HEADING_TAGS = ['h2', 'h3', 'h4', 'h5'] as const;
+const HEADING_CLASSES = [
+  'mt-8 mb-3 text-pretty font-serif text-2xl font-bold text-foreground',
+  'mt-7 mb-3 text-pretty font-serif text-xl font-bold text-foreground',
+  'mt-6 mb-2.5 text-pretty font-serif text-lg font-semibold text-foreground',
+  'mt-6 mb-2.5 text-pretty font-serif text-base font-semibold text-foreground',
+];
+
+function parseBlock(para: string): {
+  tag: 'p' | (typeof HEADING_TAGS)[number];
+  text: string;
+  className: string;
+} {
+  const match = para.match(HEADING_PATTERN);
+  if (!match) return { tag: 'p', text: para, className: 'mb-5 text-pretty' };
+
+  const level = match[1].length;
+  return { tag: HEADING_TAGS[level - 1], text: match[2], className: HEADING_CLASSES[level - 1] };
 }
 
 export function ReadingView({
@@ -117,30 +145,35 @@ export function ReadingView({
         onMouseUp={handleMouseUp}
         className="font-serif text-lg leading-[1.8] text-foreground"
       >
-        {paragraphs.map((para, pi) => (
-          <p key={pi} className="mb-5 text-pretty">
-            {tokenizeParagraph(para).map((token, ti) => {
-              if (token.trim() === '') return token;
+        {paragraphs.map((para, pi) => {
+          const block = parseBlock(para);
+          const Tag = block.tag;
 
-              const word = stripWord(token);
-              if (!word) return <span key={ti}>{token}</span>;
+          return (
+            <Tag key={pi} className={block.className}>
+              {tokenizeParagraph(block.text).map((token, ti) => {
+                if (token.trim() === '') return token;
 
-              const tokenId = `${pi}-${ti}`;
-              const isActive = selection?.tokenId === tokenId;
+                const word = stripWord(token);
+                if (!word) return <span key={ti}>{token}</span>;
 
-              return (
-                <span
-                  key={ti}
-                  data-word={word}
-                  data-token-id={tokenId}
-                  className={isActive ? 'word-active' : 'word'}
-                >
-                  {token}
-                </span>
-              );
-            })}
-          </p>
-        ))}
+                const tokenId = `${pi}-${ti}`;
+                const isActive = selection?.tokenId === tokenId;
+
+                return (
+                  <span
+                    key={ti}
+                    data-word={word}
+                    data-token-id={tokenId}
+                    className={isActive ? 'word-active' : 'word'}
+                  >
+                    {token}
+                  </span>
+                );
+              })}
+            </Tag>
+          );
+        })}
       </div>
 
       {selection && (
