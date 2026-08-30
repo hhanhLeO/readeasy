@@ -204,13 +204,24 @@ function WordRow({
         {word.reviewLabel}
       </div>
       <div className="flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-        <Link
-          href="/review"
-          title="Review"
-          className="inline-flex items-center justify-center rounded-md border border-border-strong px-2.5 py-1 text-text-secondary hover:bg-bg-secondary"
-        >
-          <Brain size={12} />
-        </Link>
+        {isDue ? (
+          <Link
+            href={`/review?word=${word.id}`}
+            title="Review this word now"
+            className="inline-flex items-center justify-center rounded-md border border-border-strong px-2.5 py-1 text-text-secondary hover:bg-bg-secondary"
+          >
+            <Brain size={12} />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            disabled
+            title={`Not due yet — ${word.reviewLabel.toLowerCase()}`}
+            className="inline-flex cursor-not-allowed items-center justify-center rounded-md border border-border-strong px-2.5 py-1 text-text-tertiary opacity-50"
+          >
+            <Brain size={12} />
+          </button>
+        )}
         <button
           type="button"
           title="Delete"
