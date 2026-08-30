@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { extractArticleFromUrl, ExtractError } from '../lib/readability';
 
 const TITLE_MAX_LENGTH = 80;
 
@@ -83,4 +84,34 @@ export async function updateDocumentTitleAction(
     .where(eq(documents.id, documentId));
 
   return finalTitle;
+}
+
+export async function createDocumentFromUrlAction(
+  url: string,
+): Promise<{ error: string } | void> {
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return { error: 'Paste a URL first.' };
+
+  const user = await getCurrentUser();
+  if (!user) redirect('/signin');
+
+  let article: { title: string; content: string };
+  try {
+    article = await extractArticleFromUrl(trimmedUrl);
+  } catch (err) {
+    if (err instanceof ExtractError) return { error: err.message };
+    return { error: "Something went wrong reading that page. Try pasting the text instead." };
+  }
+
+  const [doc] = await db
+    .insert(documents)
+    .values({
+      userId: user.id,
+      title: truncateAtWordBoundary(article.title, TITLE_MAX_LENGTH),
+      sourceUrl: trimmedUrl,
+      content: article.content,
+    })
+    .returning({ id: documents.id });
+
+  redirect(`/read/${doc.id}`);
 }

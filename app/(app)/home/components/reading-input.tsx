@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useTransition, type SubmitEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { Search, FileText, FileUp, ArrowRight } from 'lucide-react';
-import { createDocumentFromTextAction } from '@/app/(app)/actions/documents';
+import { createDocumentFromTextAction, createDocumentFromUrlAction } from '@/app/(app)/actions/documents';
 
 const INPUT_MODES = [
   { id: 'text', label: 'Paste text', icon: FileText, soon: false },
-  { id: 'url', label: 'Paste URL', icon: Search, soon: true },
+  { id: 'url', label: 'Paste URL', icon: Search, soon: false },
   { id: 'pdf', label: 'Upload PDF', icon: FileUp, soon: true },
 ] as const;
 
@@ -20,10 +19,10 @@ const HELPER_TEXT: Record<Mode, string> = {
 };
 
 export function ReadingInput() {
-  const router = useRouter();
   const [mode, setMode] = useState<Mode>('text');
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleTextSubmit(e: SubmitEvent) {
@@ -36,7 +35,12 @@ export function ReadingInput() {
 
   function handleUrlSubmit(e: SubmitEvent) {
     e.preventDefault();
-    router.push('/read');
+    if (!url.trim() || isPending) return;
+    setUrlError(null);
+    startTransition(async () => {
+      const result = await createDocumentFromUrlAction(url);
+      if (result?.error) setUrlError(result.error);
+    });
   }
 
   return (
@@ -100,26 +104,37 @@ export function ReadingInput() {
 
       {/* URL Mode */}
       {mode === 'url' && (
-        <form
-          onSubmit={handleUrlSubmit}
-          className="flex items-center rounded-xl border border-border bg-white p-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-        >
-          <div className="flex items-center px-3 text-text-tertiary">
-            <Search size={18} strokeWidth={2} />
-          </div>
-          <input
-            className="flex-1 border-none bg-transparent px-0 py-2.5 text-sm text-foreground placeholder:text-text-tertiary focus:outline-none"
-            placeholder="Paste an article URL here…"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:-translate-y-px hover:bg-accent-dark hover:shadow-[0_4px_10px_rgba(13,148,136,0.25)]"
+        <>
+          <form
+            onSubmit={handleUrlSubmit}
+            className="flex items-center rounded-xl border border-border bg-white p-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
           >
-            Read <ArrowRight size={14} strokeWidth={2} />
-          </button>
-        </form>
+            <div className="flex items-center px-3 text-text-tertiary">
+              <Search size={18} strokeWidth={2} />
+            </div>
+            <input
+              className="flex-1 border-none bg-transparent px-0 py-2.5 text-sm text-foreground placeholder:text-text-tertiary focus:outline-none"
+              placeholder="Paste an article URL here…"
+              value={url}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                if (urlError) setUrlError(null);
+              }}
+              disabled={isPending}
+            />
+            <button
+              type="submit"
+              disabled={!url.trim() || isPending}
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:-translate-y-px hover:bg-accent-dark hover:shadow-[0_4px_10px_rgba(13,148,136,0.25)] disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-bg-tertiary disabled:text-text-tertiary disabled:shadow-none"
+            >
+              {isPending ? 'Fetching…' : 'Read'}{' '}
+              <ArrowRight size={14} strokeWidth={2} />
+            </button>
+          </form>
+          {urlError && (
+            <div className="mt-2 text-[13px] text-danger">{urlError}</div>
+          )}
+        </>
       )}
 
       {/* PDF Mode */}
