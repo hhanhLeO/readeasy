@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Check } from 'lucide-react';
 import { WordPopup } from './word-popup';
 
@@ -72,14 +72,17 @@ function parseBlock(para: string): {
 export function ReadingView({
   documentId,
   paragraphs,
+  savedWords,
 }: {
   documentId: string;
   paragraphs: string[];
+  savedWords: string[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const nextSelectionId = useRef(0);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const savedWordSet = useMemo(() => new Set(savedWords), [savedWords]);
 
   function openSelection(next: Omit<Selection, 'id'>) {
     nextSelectionId.current += 1;
@@ -159,13 +162,22 @@ export function ReadingView({
 
                 const tokenId = `${pi}-${ti}`;
                 const isActive = selection?.tokenId === tokenId;
+                const isSeen = savedWordSet.has(word.toLowerCase());
+                const className = isActive
+                  ? isSeen
+                    ? 'word-seen-active'
+                    : 'word-active'
+                  : isSeen
+                    ? 'word-seen'
+                    : 'word';
 
                 return (
                   <span
                     key={ti}
                     data-word={word}
                     data-token-id={tokenId}
-                    className={isActive ? 'word-active' : 'word'}
+                    title={isSeen ? "You've saved this word before" : undefined}
+                    className={className}
                   >
                     {token}
                   </span>

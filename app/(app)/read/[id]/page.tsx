@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { eq } from 'drizzle-orm';
 import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
-import { documents } from '@/app/lib/db/schema';
+import { documents, words } from '@/app/lib/db/schema';
 import { EditableContent } from './components/editable-content';
 import { EditableTitle } from './components/editable-title';
 
@@ -43,6 +43,13 @@ export default async function ReadPage({
   const doc = await getDocument(id);
   if (!doc || doc.userId !== user.id) notFound();
 
+  // Just get all the distinct words, not the meanings
+  const savedWordRows = await db
+    .selectDistinct({ word: words.word })
+    .from(words)
+    .where(eq(words.userId, user.id));
+  const savedWords = savedWordRows.map((row) => row.word.toLowerCase());
+
   return (
     <div className="mx-auto max-w-[680px] px-12 py-12">
       <div className="mb-4 text-[13px] text-text-secondary">
@@ -51,7 +58,11 @@ export default async function ReadPage({
 
       <EditableTitle documentId={doc.id} initialTitle={doc.title} />
 
-      <EditableContent documentId={doc.id} initialContent={doc.content} />
+      <EditableContent
+        documentId={doc.id}
+        initialContent={doc.content}
+        savedWords={savedWords}
+      />
     </div>
   );
 }

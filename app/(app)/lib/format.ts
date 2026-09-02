@@ -5,7 +5,9 @@ export function estimateMinutes(content: string) {
 
 export type WordStatus = "overdue" | "due" | "scheduled" | "mastered";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
 
 const MASTERED_REPETITIONS = 5;
 
@@ -28,4 +30,17 @@ export function reviewStatus(
   if (days < 7) return { status: "scheduled", label: `In ${days} days` };
   if (days < 14) return { status: "scheduled", label: "In a week" };
   return { status: "scheduled", label: `In ${Math.round(days / 7)} weeks` };
+}
+
+export function formatRelativeTime(date: Date, now: Date = new Date()): string {
+  const diffMs = now.getTime() - date.getTime();
+
+  if (diffMs < MINUTE_MS) return "just now";
+  if (diffMs < HOUR_MS) return `${Math.round(diffMs / MINUTE_MS)}m ago`;
+  if (diffMs < DAY_MS) return `${Math.round(diffMs / HOUR_MS)}h ago`;
+
+  const days = Math.round(diffMs / DAY_MS);
+  if (days < 30) return `${days}d ago`;
+  if (days < 365) return `${Math.round(days / 30)}mo ago`;
+  return `${Math.round(days / 365)}y ago`;
 }

@@ -101,3 +101,11 @@ body {
 @utility headline {
   @apply text-pretty font-serif text-[32px] font-bold leading-[1.15] tracking-[-0.01em] text-foreground;
 }
+
+@utility word-seen {
+  @apply cursor-pointer rounded-sm border-b-2 border-dashed border-border-strong transition-colors duration-100 hover:border-text-secondary hover:bg-bg-secondary;
+}
+
+@utility word-seen-active {
+  @apply cursor-pointer rounded-sm border-b-2 border-dashed border-accent bg-accent-light transition-colors duration-100;
+}

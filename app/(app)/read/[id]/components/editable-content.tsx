@@ -15,9 +15,11 @@ function toParagraphs(text: string): string[] {
 export function EditableContent({
   documentId,
   initialContent,
+  savedWords,
 }: {
   documentId: string;
   initialContent: string;
+  savedWords: string[];
 }) {
   const [content, setContent] = useState(initialContent);
   const [editing, setEditing] = useState(false);
@@ -116,7 +118,11 @@ export function EditableContent({
           <Pencil size={13} /> Edit content
         </button>
       </div>
-      <ReadingView documentId={documentId} paragraphs={toParagraphs(content)} />
+      <ReadingView
+        documentId={documentId}
+        paragraphs={toParagraphs(content)}
+        savedWords={savedWords}
+      />
       {saved && (
         <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-success">
           <Check size={13} /> Saved

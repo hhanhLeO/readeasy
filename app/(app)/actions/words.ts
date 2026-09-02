@@ -1,9 +1,9 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, and, ilike, desc } from "drizzle-orm";
 import { getCurrentUser } from "@/app/lib/auth/dal";
 import { db } from "@/app/lib/db";
-import { words, reviews } from "@/app/lib/db/schema";
+import { words, reviews, documents } from "@/app/lib/db/schema";
 
 export async function saveWordAction({
   documentId,
@@ -53,4 +53,30 @@ export async function deleteWordAction(wordId: string) {
 
   // Cascades to the word's review row via reviews.word_id's ON DELETE CASCADE.
   await db.delete(words).where(eq(words.id, wordId));
+}
+
+export type SavedMeaning = {
+  meaning: string;
+  contextSentence: string;
+  phonetic: string | null;
+  createdAt: Date;
+  documentTitle: string | null;
+}
+
+export async function getSavedMeaningsAction(word: string): Promise<SavedMeaning[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  return db
+    .select({
+      meaning: words.meaning,
+      contextSentence: words.contextSentence,
+      phonetic: words.phonetic,
+      createdAt: words.createdAt,
+      documentTitle: documents.title
+    })
+    .from(words)
+    .leftJoin(documents, eq(words.documentId, documents.id))
+    .where(and(eq(words.userId, user.id), ilike(words.word, word)))
+    .orderBy(desc(words.createdAt));
 }
