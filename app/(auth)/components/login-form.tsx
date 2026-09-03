@@ -8,7 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 
 const initialState: LoginState = undefined;
 
-export function LoginForm() {
+export function LoginForm({ oauthError }: { oauthError?: string }) {
   const [state, formAction] = useActionState(login, initialState);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -18,6 +18,12 @@ export function LoginForm() {
         Welcome back
       </h1>
       <p className="mb-8 text-text-secondary">Continue where you left off.</p>
+
+      {oauthError && (
+        <p className="mb-3.5 rounded-lg bg-danger/10 px-3.5 py-2.5 text-sm text-danger">
+          Could not sign in with Google. Please try again.
+        </p>
+      )}
 
       <form action={formAction} className="flex flex-col gap-3.5">
         {state?.message && (
@@ -81,7 +87,7 @@ export function LoginForm() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <button type="button" className="btn-secondary btn-md w-full">
+      <a href="/api/auth/google" className="btn-secondary btn-md w-full">
         {/* Google Icon */}
         <svg
           width="16px"
@@ -117,7 +123,7 @@ export function LoginForm() {
           </g>
         </svg>
         Continue with Google
-      </button>
+      </a>
 
       <p className="mt-6 text-center text-[13px] text-text-secondary">
         Don&apos;t have an account?{' '}

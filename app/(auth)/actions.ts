@@ -118,7 +118,11 @@ export async function login(
     .where(eq(users.email, email))
     .limit(1);
 
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  if (
+    !user ||
+    !user.passwordHash ||
+    !(await verifyPassword(password, user.passwordHash))
+  ) {
     return { message: 'Incorrect email or password.' };
   }
 

@@ -95,7 +95,7 @@ export function SignupForm() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <button type="button" className="btn-secondary btn-md w-full">
+      <a href="/api/auth/google" className="btn-secondary btn-md w-full">
         {/* Google Icon */}
         <svg
           width="16px"
@@ -131,7 +131,7 @@ export function SignupForm() {
           </g>
         </svg>
         Continue with Google
-      </button>
+      </a>
 
       <p className="mt-6 text-center text-[13px] text-text-secondary">
         Already have an account?{' '}
