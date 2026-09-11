@@ -1,4 +1,5 @@
 import { lookupWord, WordLookup } from '@/app/lib/dictionary/word-lookup';
+import { consumeLlmQuota } from '@/app/lib/dictionary/quota';
 import { getCurrentUser } from '@/app/lib/auth/dal';
 
 export async function POST(request: Request) {
@@ -17,14 +18,20 @@ export async function POST(request: Request) {
     );
   }
 
+  const allowed = await consumeLlmQuota(user.id);
+  if (!allowed) {
+    return Response.json(
+      { error: 'Daily lookup limit reached. Try again tomorrow.' },
+      { status: 429 }
+    );
+  }
+
   let result: WordLookup | null;
   try {
     result = await lookupWord({ word, sentence });
-  } catch {
-    return Response.json(
-      { error: 'Failed to generate a lookup' },
-      { status: 500 },
-    );
+  } catch (err) {
+    console.error('lookupWord failed', err);
+    result = null;
   }
 
   if (!result) {
