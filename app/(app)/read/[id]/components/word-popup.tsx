@@ -7,6 +7,10 @@ import { getSavedMeaningsAction, saveWordAction, type SavedMeaning } from '@/app
 import { formatRelativeTime } from '@/app/(app)/lib/format';
 import type { WordLookup } from '@/app/lib/dictionary/word-lookup';
 
+const GENERIC_LOOKUP_ERROR = "Couldn't look up this word. Try again.";
+
+class LookupError extends Error {}
+
 export function WordPopup({
   word,
   sentence,
@@ -24,7 +28,7 @@ export function WordPopup({
 }) {
   const [lookup, setLookup] = useState<WordLookup | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const lookupPromiseRef = useRef<Promise<WordLookup | null> | null>(null);
@@ -55,23 +59,28 @@ export function WordPopup({
     if (lookupPromiseRef.current) return lookupPromiseRef.current;
     
     setLoading(true);
-    setError(false);
+    setError(null);
 
     const promise = fetch('/api/translate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word, sentence }),
     })
-      .then((res) => {
-        if (!res.ok) throw new Error('lookup failed');
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new LookupError(typeof body?.error === 'string' ? body.error : undefined);
+        }
         return res.json() as Promise<WordLookup>;
       })
       .then((data) => {
         if (!unmountedRef.current) setLookup(data);
         return data;
       })
-      .catch(() => {
-        if (!unmountedRef.current) setError(true);
+      .catch((err) => {
+        if (!unmountedRef.current) {
+          setError(err instanceof LookupError && err.message ? err.message : GENERIC_LOOKUP_ERROR);
+        }
         return null;
       })
       .finally(() => {
@@ -251,10 +260,10 @@ export function WordPopup({
                 <div className="h-3 w-full animate-pulse rounded bg-bg-tertiary" />
                 <div className="h-3 w-4/5 animate-pulse rounded bg-bg-tertiary" />
               </div>
-            ) : error || !lookup ? (
-              <div className="text-danger">
-                Couldn&apos;t look up this word. Try again.
-              </div>
+            ) : error ? (
+              <div className="text-danger">{error}</div>
+            ) : !lookup ? (
+              <div className="text-danger">{GENERIC_LOOKUP_ERROR}</div>
             ) : (
               <>
                 <div className="mb-2 font-medium text-foreground">
