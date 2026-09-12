@@ -109,3 +109,26 @@ body {
 @utility word-seen-active {
   @apply cursor-pointer rounded-sm border-b-2 border-dashed border-accent bg-accent-light transition-colors duration-100;
 }
+
+@keyframes demo-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes demo-tap {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  45%,
+  55% {
+    transform: translateY(-4px) scale(0.88);
+  }
+}
