@@ -10,12 +10,12 @@ import { ArticleCard, type Article } from '../components/article-card';
 import { ReadingInput } from './components/reading-input';
 import { StreakRing } from './components/streak-ring';
 import { estimateMinutes } from '../lib/format';
+import { getDueWordCount } from '../lib/due-count';
 
 export const metadata: Metadata = {
   title: 'Home - ReadEasy AI',
 };
 
-const WORDS_DUE = 12;
 const STREAK_DAYS = 8;
 
 // Temporary curated picks (News in Levels) until a real recommendation
@@ -61,6 +61,7 @@ function greeting() {
 export default async function HomePage() {
   const user = await getCurrentUser();
   const name = user?.username ?? 'there';
+  const dueCount = user ? await getDueWordCount(user.id) : 0;
 
   const recentDocuments = user
     ? await db
@@ -94,8 +95,10 @@ export default async function HomePage() {
           </div>
           <div className="text-sm text-text-secondary">
             You have{' '}
-            <strong className="text-accent-dark">{WORDS_DUE} words</strong> due
-            for review today.
+            <strong className="text-accent-dark">
+              {dueCount} {dueCount === 1 ? 'word' : 'words'}
+            </strong> 
+            due for review today.
           </div>
         </div>
         <Link
@@ -146,7 +149,7 @@ export default async function HomePage() {
         </div>
         <div className="flex-1">
           <div className="mb-0.5 text-[17px] font-semibold">
-            {WORDS_DUE} words due for review today
+            {dueCount} {dueCount === 1 ? "word" : "words"} due for review today
           </div>
           <div className="text-sm text-text-secondary">
             Spaced repetition — takes about 6 minutes.

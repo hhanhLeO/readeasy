@@ -37,7 +37,7 @@ export function Sidebar() {
           </Link>
         );
       })}
-      <div className="flex-1" />
+      {/* <div className="flex-1" />
       <div className="m-2 rounded-lg border border-border bg-white p-3 text-[13px]">
         <div className="mb-1 flex items-center gap-1.5 font-semibold text-foreground">
           <Brain size={14} strokeWidth={2} />
@@ -50,7 +50,7 @@ export function Sidebar() {
         >
           Start review
         </Link>
-      </div>
+      </div> */}
     </aside>
   );
 }
