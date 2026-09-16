@@ -97,8 +97,8 @@ export default async function HomePage() {
             You have{' '}
             <strong className="text-accent-dark">
               {dueCount} {dueCount === 1 ? 'word' : 'words'}
-            </strong> 
-            due for review today.
+            </strong>
+            {' '}due for review today.
           </div>
         </div>
         <Link
@@ -112,7 +112,7 @@ export default async function HomePage() {
       <ReadingInput />
 
       {/* Recommended */}
-      <Section
+      {/* <Section
         title="Recommended for you"
         right={
           <span className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
@@ -125,7 +125,7 @@ export default async function HomePage() {
             <ArticleCard key={a.id} article={a} />
           ))}
         </div>
-      </Section>
+      </Section> */}
 
       {/* Continue reading */}
       <Section title="Continue reading">
@@ -143,13 +143,13 @@ export default async function HomePage() {
       </Section>
 
       {/* Today's review */}
-      <div className="flex items-center gap-6 rounded-xl border border-accent-light bg-white p-6 shadow-[0_4px_16px_rgba(13,148,136,0.06)]">
+      {/* <div className="flex items-center gap-6 rounded-xl border border-accent-light bg-white p-6 shadow-[0_4px_16px_rgba(13,148,136,0.06)]">
         <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent-tint text-[28px]">
           🧠
         </div>
         <div className="flex-1">
           <div className="mb-0.5 text-[17px] font-semibold">
-            {dueCount} {dueCount === 1 ? "word" : "words"} due for review today
+            {dueCount} {dueCount === 1 ? 'word' : 'words'} due for review today
           </div>
           <div className="text-sm text-text-secondary">
             Spaced repetition — takes about 6 minutes.
@@ -162,7 +162,7 @@ export default async function HomePage() {
         >
           Start session <ArrowRight size={14} strokeWidth={2} />
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }
