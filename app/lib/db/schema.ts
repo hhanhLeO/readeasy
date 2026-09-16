@@ -8,7 +8,7 @@ import {
   real,
 } from 'drizzle-orm/pg-core';
 
-export const NEXT_MIDNIGHT_VN = sql`(date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day') at time zone 'Asia/Ho_Chi_Minh'`;
+export const NEXT_MIDNIGHT_VN = sql`((date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day') at time zone 'Asia/Ho_Chi_Minh')`;
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -16,8 +16,8 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash'),
   googleId: text('google_id').unique(),
-  llmCallsToday: integer("llm_calls_today").notNull().default(0),
-  llmCallsResetAt: timestamp("llm_calls_reset_at", { withTimezone: true })
+  llmCallsToday: integer('llm_calls_today').notNull().default(0),
+  llmCallsResetAt: timestamp('llm_calls_reset_at', { withTimezone: true })
     .notNull()
     .default(NEXT_MIDNIGHT_VN),
   createdAt: timestamp('created_at', { withTimezone: true })
