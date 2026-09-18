@@ -1,8 +1,6 @@
-import { TextTranslation, translateText } from '@/app/lib/llm/translate';
+import { lookupWord, WordLookup } from '@/app/lib/llm/lookup';
 import { consumeLlmQuota } from '@/app/lib/llm/quota';
 import { getCurrentUser } from '@/app/lib/auth/dal';
-
-const MAX_TEXT_LENGTH = 500;
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -11,13 +9,13 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const text = typeof body?.text === 'string' ? body.text.trim() : '';
-
-  if (!text) {
-    return Response.json({ error: 'text is required' }, { status: 400 });
-  }
-  if (text.length > MAX_TEXT_LENGTH) {
-    return Response.json({ error: 'Selected text is too long to translate' }, { status: 400 });
+  const word = typeof body?.word === 'string' ? body.word : '';
+  const sentence = typeof body?.sentence === 'string' ? body.sentence : '';
+  if (!word || !sentence) {
+    return Response.json(
+      { error: 'word and sentence are required' },
+      { status: 400 },
+    );
   }
 
   const allowed = await consumeLlmQuota(user.id);
@@ -28,17 +26,17 @@ export async function POST(request: Request) {
     );
   }
 
-  let result: TextTranslation | null;
+  let result: WordLookup | null;
   try {
-    result = await translateText({ text });
+    result = await lookupWord({ word, sentence });
   } catch (err) {
-    console.error('translateText failed', err);
+    console.error('lookupWord failed', err);
     result = null;
   }
 
   if (!result) {
     return Response.json(
-      { error: 'Failed to generate a translation' },
+      { error: 'Failed to generate a lookup' },
       { status: 500 },
     );
   }

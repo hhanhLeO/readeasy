@@ -4,7 +4,7 @@ import { db } from "@/app/lib/db";
 import { NEXT_MIDNIGHT_VN, users } from "@/app/lib/db/schema";
 
 // Max LLM lookups a single user can make per calendar day (Vietnam time).
-const DAILY_LLM_CALL_LIMIT = 5;
+const DAILY_LLM_CALL_LIMIT = Number(process.env.DAILY_LLM_CALL_LIMIT) || 5;
 
 export async function consumeLlmQuota(userId: string): Promise<boolean> {
   const [row] = await db

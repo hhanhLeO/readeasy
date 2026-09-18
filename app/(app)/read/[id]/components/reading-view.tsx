@@ -3,8 +3,10 @@
 import { useRef, useState, useMemo } from 'react';
 import { Check } from 'lucide-react';
 import { WordPopup } from './word-popup';
+import { TranslationPopup } from './translation-popup';
 
-type Selection = {
+type WordSelection = {
+  kind: 'word';
   id: number;
   word: string;
   sentence: string;
@@ -12,7 +14,19 @@ type Selection = {
   tokenId: string | null;
 };
 
+type TextSelection = {
+  kind: 'text';
+  id: number;
+  text: string;
+  rect: DOMRect;
+};
+
+type Selection = WordSelection | TextSelection;
+
+type NewSelection = Omit<WordSelection, 'id'> | Omit<TextSelection, 'id'>;
+
 const MAX_SELECTION_LENGTH = 60;
+const MAX_TEXT_LENGTH = 500;
 
 function stripWord(token: string): string {
   return token.replace(/^[^A-Za-zÀ-ÿ'’]+|[^A-Za-zÀ-ÿ'’]+$/g, '');
@@ -84,26 +98,48 @@ export function ReadingView({
   const [toast, setToast] = useState<string | null>(null);
   const savedWordSet = useMemo(() => new Set(savedWords), [savedWords]);
 
-  function openSelection(next: Omit<Selection, 'id'>) {
+  function openSelection(next: NewSelection) {
     nextSelectionId.current += 1;
-    setSelection({ id: nextSelectionId.current, ...next });
+    setSelection({ ...next, id: nextSelectionId.current });
+  }
+
+  function showToast(message: string) {
+    setToast(message);
+    setTimeout(() => setToast(null), 2500);
   }
 
   function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
     const sel = window.getSelection();
     if (!sel) return;
 
-    // Dragged across text — support looking up a whole phrase.
+    // Dragged across text.
     if (!sel.isCollapsed && containerRef.current?.contains(sel.anchorNode)) {
       const text = sel.toString().trim();
-      if (!text || text.length > MAX_SELECTION_LENGTH) return;
+      if (!text) return;
 
       const range = sel.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) return;
 
+      const wordCount = text.split(/\s+/).filter(Boolean).length;
+
+      // More than one word — translate the whole selection instead of
+      // treating it as a vocab lookup.
+      if (wordCount > 1) {
+        if (text.length > MAX_TEXT_LENGTH) {
+          showToast('Selected text is too long to translate.');
+          return;
+        }
+        openSelection({ kind: 'text', text, rect });
+        return;
+      }
+
+      // A single word, just selected by dragging instead of clicking.
+      if (text.length > MAX_SELECTION_LENGTH) return;
+
       const paragraphText = findParagraphText(sel.anchorNode) || text;
       openSelection({
+        kind: 'word',
         word: text,
         sentence: findSentence(paragraphText, text),
         rect,
@@ -124,6 +160,7 @@ export function ReadingView({
     const rect = target.getBoundingClientRect();
     const paragraphText = findParagraphText(target) || word;
     openSelection({
+      kind: 'word',
       word,
       sentence: findSentence(paragraphText, word),
       rect,
@@ -137,8 +174,7 @@ export function ReadingView({
   }
 
   function handleSaved(word: string) {
-    setToast(`Saved "${word}" to your vocab`);
-    setTimeout(() => setToast(null), 2500);
+    showToast(`Saved "${word}" to your vocab`);
   }
 
   return (
@@ -161,7 +197,7 @@ export function ReadingView({
                 if (!word) return <span key={ti}>{token}</span>;
 
                 const tokenId = `${pi}-${ti}`;
-                const isActive = selection?.tokenId === tokenId;
+                const isActive = selection?.kind === 'word' && selection.tokenId === tokenId;
                 const isSeen = savedWordSet.has(word.toLowerCase());
                 const className = isActive
                   ? isSeen
@@ -188,7 +224,7 @@ export function ReadingView({
         })}
       </div>
 
-      {selection && (
+      {selection?.kind === 'word' && (
         <WordPopup
           key={selection.id}
           word={selection.word}
@@ -197,6 +233,15 @@ export function ReadingView({
           documentId={documentId}
           onDismiss={handleDismiss}
           onSaved={handleSaved}
+        />
+      )}
+
+      {selection?.kind === 'text' && (
+        <TranslationPopup
+          key={selection.id}
+          text={selection.text}
+          rect={selection.rect}
+          onDismiss={handleDismiss}
         />
       )}
 

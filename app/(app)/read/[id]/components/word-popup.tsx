@@ -5,7 +5,7 @@ import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { Check, X, BookmarkPlus, Bookmark, Sparkles } from 'lucide-react';
 import { getSavedMeaningsAction, saveWordAction, type SavedMeaning } from '@/app/(app)/actions/words';
 import { formatRelativeTime } from '@/app/(app)/lib/format';
-import type { WordLookup } from '@/app/lib/dictionary/word-lookup';
+import type { WordLookup } from '@/app/lib/llm/lookup';
 
 const GENERIC_LOOKUP_ERROR = "Couldn't look up this word. Try again.";
 
@@ -61,7 +61,7 @@ export function WordPopup({
     setLoading(true);
     setError(null);
 
-    const promise = fetch('/api/translate', {
+    const promise = fetch('/api/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word, sentence }),
