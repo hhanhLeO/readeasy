@@ -11,12 +11,11 @@ import { ReadingInput } from './components/reading-input';
 import { StreakRing } from './components/streak-ring';
 import { estimateMinutes } from '../lib/format';
 import { getDueWordCount } from '../lib/due-count';
+import { getDisplayStreak } from '../lib/streak';
 
 export const metadata: Metadata = {
   title: 'Home - ReadEasy AI',
 };
-
-const STREAK_DAYS = 8;
 
 // Temporary curated picks (News in Levels) until a real recommendation
 // feature exists. Only metadata is stored here — reading still goes through
@@ -62,6 +61,7 @@ export default async function HomePage() {
   const user = await getCurrentUser();
   const name = user?.username ?? 'there';
   const dueCount = user ? await getDueWordCount(user.id) : 0;
+  const streakDays = user ? getDisplayStreak(user) : 0;
 
   const recentDocuments = user
     ? await db
@@ -143,7 +143,7 @@ export default async function HomePage() {
       </Section>
 
       {/* Today's review */}
-      {/* <div className="flex items-center gap-6 rounded-xl border border-accent-light bg-white p-6 shadow-[0_4px_16px_rgba(13,148,136,0.06)]">
+      <div className="flex items-center gap-6 rounded-xl border border-accent-light bg-white p-6 shadow-[0_4px_16px_rgba(13,148,136,0.06)]">
         <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent-tint text-[28px]">
           🧠
         </div>
@@ -152,17 +152,17 @@ export default async function HomePage() {
             {dueCount} {dueCount === 1 ? 'word' : 'words'} due for review today
           </div>
           <div className="text-sm text-text-secondary">
-            Spaced repetition — takes about 6 minutes.
+            Spaced repetition - takes about 6 minutes.
           </div>
         </div>
-        <StreakRing days={STREAK_DAYS} />
+        <StreakRing days={streakDays} />
         <Link
           href="/review"
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:-translate-y-px hover:bg-accent-dark hover:shadow-[0_4px_10px_rgba(13,148,136,0.25)]"
         >
           Start session <ArrowRight size={14} strokeWidth={2} />
         </Link>
-      </div> */}
+      </div>
     </div>
   );
 }

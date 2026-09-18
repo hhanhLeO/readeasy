@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: '/home', label: 'Home', icon: Home },
   { href: '/articles', label: 'All Articles', icon: Book },
   { href: '/words', label: 'My Words', icon: BookOpen },
-  // { href: '/progress', label: 'Progress', icon: BarChart3 },
+  { href: '/progress', label: 'Progress', icon: BarChart3 },
 ];
 
 export function Sidebar() {

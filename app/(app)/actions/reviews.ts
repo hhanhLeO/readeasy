@@ -2,9 +2,10 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/app/lib/db";
-import { reviews, words } from "@/app/lib/db/schema";
+import { reviews, words, reviewLogs } from "@/app/lib/db/schema";
 import { getCurrentUser } from "@/app/lib/auth/dal";
 import { applySm2, type Rating } from "../lib/srs";
+import { recordActivity } from "../lib/streak";
 
 export async function submitReviewAction(reviewId: string, rating: Rating) {
   const user = await getCurrentUser();
@@ -33,14 +34,19 @@ export async function submitReviewAction(reviewId: string, rating: Rating) {
     rating,
   );
 
-  await db
-    .update(reviews)
-    .set({
-      easeFactor: next.easeFactor,
-      intervalDays: next.intervalDays,
-      repetitions: next.repetitions,
-      nextReviewAt: next.nextReviewAt,
-      lastReviewedAt: new Date(),
-    })
-    .where(eq(reviews.id, reviewId));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(reviews)
+      .set({
+        easeFactor: next.easeFactor,
+        intervalDays: next.intervalDays,
+        repetitions: next.repetitions,
+        nextReviewAt: next.nextReviewAt,
+        lastReviewedAt: new Date(),
+      })
+      .where(eq(reviews.id, reviewId));
+
+    await tx.insert(reviewLogs).values({ reviewId, rating });
+    await recordActivity(user.id, tx);
+  })
 }

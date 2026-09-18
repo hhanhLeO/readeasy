@@ -9,7 +9,7 @@ const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 
-const MASTERED_REPETITIONS = 5;
+export const MASTERED_REPETITIONS = 5;
 
 export function reviewStatus(
   nextReviewAt: Date,
@@ -43,4 +43,8 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   if (days < 30) return `${days}d ago`;
   if (days < 365) return `${Math.round(days / 30)}mo ago`;
   return `${Math.round(days / 365)}y ago`;
+}
+
+export function localDayKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }

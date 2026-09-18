@@ -11,7 +11,13 @@ export const getCurrentUser = cache(async () => {
   if (!session) return null;
 
   const [user] = await db
-    .select({ id: users.id, username: users.username, email: users.email })
+    .select({
+      id: users.id,
+      username: users.username,
+      email: users.email,
+      currentStreak: users.currentStreak,
+      lastActiveDate: users.lastActiveDate,
+    })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1);

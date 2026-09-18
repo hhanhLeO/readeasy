@@ -6,6 +6,7 @@ import {
   timestamp,
   integer,
   real,
+  date,
 } from 'drizzle-orm/pg-core';
 
 export const NEXT_MIDNIGHT_VN = sql`((date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day') at time zone 'Asia/Ho_Chi_Minh')`;
@@ -20,6 +21,8 @@ export const users = pgTable('users', {
   llmCallsResetAt: timestamp('llm_calls_reset_at', { withTimezone: true })
     .notNull()
     .default(NEXT_MIDNIGHT_VN),
+  currentStreak: integer("current_streak").notNull().default(0),
+  lastActiveDate: date("last_active_date", { mode: "string" }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -71,6 +74,17 @@ export const reviews = pgTable('reviews', {
   lastReviewedAt: timestamp('last_reviewed_at', { withTimezone: true }),
 });
 
+export const reviewLogs = pgTable("review_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reviewId: uuid("review_id")
+    .notNull()
+    .references(() => reviews.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
@@ -82,3 +96,6 @@ export type NewWord = typeof words.$inferInsert;
 
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+
+export type ReviewLog = typeof reviewLogs.$inferSelect;
+export type NewReviewLog = typeof reviewLogs.$inferInsert;

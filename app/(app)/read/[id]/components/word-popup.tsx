@@ -165,7 +165,7 @@ export function WordPopup({
         <div>
           <div className="text-base font-bold text-foreground">{word}</div>
           {phonetic && (
-            <div className="mt-0.5 font-mono text-[13px] text-text-secondary">
+            <div className="mt-0.5 font-api text-[13px] text-text-secondary">
               {phonetic}
             </div>
           )}

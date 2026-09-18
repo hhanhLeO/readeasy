@@ -6,6 +6,7 @@ import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { extractArticleFromUrl, ExtractError } from '../lib/readability';
+import { recordActivity } from '../lib/streak';
 
 const TITLE_MAX_LENGTH = 80;
 
@@ -52,6 +53,8 @@ export async function createDocumentFromTextAction(text: string) {
     })
     .returning({ id: documents.id });
 
+  await recordActivity(user.id);
+
   redirect(`/read/${doc.id}`);
 }
 
@@ -81,6 +84,8 @@ export async function createDocumentFromUrlAction(
       content: article.content,
     })
     .returning({ id: documents.id });
+
+  await recordActivity(user.id);
 
   redirect(`/read/${doc.id}`);
 }
