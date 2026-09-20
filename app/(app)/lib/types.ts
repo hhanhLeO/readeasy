@@ -9,6 +9,7 @@ export type Article = {
   level?: string;
   topic?: string;
   cover?: string;
+  progress?: number;
 };
 
 export type WordEntry = {

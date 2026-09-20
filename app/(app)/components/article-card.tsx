@@ -1,15 +1,6 @@
 import Link from 'next/link';
 import { CEFRBadge } from './cefr-badge';
-
-export type Article = {
-  id: string;
-  title: string;
-  minutes: number;
-  source?: string;
-  level?: string;
-  topic?: string;
-  cover?: string;
-};
+import type { Article } from "../lib/types";
 
 const DEFAULT_COVER = 'linear-gradient(135deg, #334155 0%, #0F172A 100%)';
 

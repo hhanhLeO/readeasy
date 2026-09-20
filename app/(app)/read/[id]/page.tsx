@@ -6,6 +6,7 @@ import { db } from '@/app/lib/db';
 import { documents, words } from '@/app/lib/db/schema';
 import { EditableContent } from './components/editable-content';
 import { EditableTitle } from './components/editable-title';
+import { ReadingProgressTracker } from './components/reading-progress-tracker';
 
 function estimateMinutes(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
@@ -55,6 +56,11 @@ export default async function ReadPage({
       <div className="mb-4 text-[13px] text-text-secondary">
         {estimateMinutes(doc.content)} min read
       </div>
+
+      <ReadingProgressTracker
+        documentId={doc.id}
+        initialPosition={doc.lastPosition}
+      />
 
       <EditableTitle documentId={doc.id} initialTitle={doc.title} />
 

@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, lt, sql } from 'drizzle-orm';
 import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
 import { CEFRBadge } from '../components/cefr-badge';
-import { ArticleCard, type Article } from '../components/article-card';
+import { ArticleCard } from '../components/article-card';
+import type { Article } from "../lib/types";
 import { ReadingInput } from './components/reading-input';
 import { StreakRing } from './components/streak-ring';
-import { estimateMinutes } from '../lib/format';
+import { COMPLETED_PERCENT, estimateMinutes } from '../lib/format';
 import { getDueWordCount } from '../lib/due-count';
 import { getDisplayStreak } from '../lib/streak';
 
@@ -69,10 +70,16 @@ export default async function HomePage() {
           id: documents.id,
           title: documents.title,
           content: documents.content,
+          lastPosition: documents.lastPosition,
         })
         .from(documents)
-        .where(eq(documents.userId, user.id))
-        .orderBy(desc(documents.createdAt))
+        .where(
+          and(
+            eq(documents.userId, user.id),
+            lt(documents.lastPosition, COMPLETED_PERCENT)
+          ),
+        )
+        .orderBy(desc(sql`coalesce(${documents.lastReadAt}, ${documents.createdAt})`))
         .limit(2)
     : [];
 
@@ -80,6 +87,7 @@ export default async function HomePage() {
     id: doc.id,
     title: doc.title,
     minutes: estimateMinutes(doc.content),
+    progress: doc.lastPosition,
   }));
 
   return (
@@ -132,12 +140,12 @@ export default async function HomePage() {
         {continueReading.length > 0 ? (
           <div className="grid grid-cols-2 gap-4">
             {continueReading.map((doc) => (
-              <ArticleCard key={doc.id} article={doc} />
+              <ArticleCard key={doc.id} article={doc} progress={doc.progress} />
             ))}
           </div>
         ) : (
           <p className="text-sm text-text-secondary">
-            No documents yet — paste an article above to get started.
+            Nothing in progress - paste an article above to get started.
           </p>
         )}
       </Section>

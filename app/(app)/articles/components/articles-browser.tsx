@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "../../components/article-card";
 import type { Article } from "../../lib/types";
+import { COMPLETED_PERCENT } from "../../lib/format";
 
 const ARTICLE_FILTERS = [
   "All",
@@ -22,7 +23,12 @@ export function LibraryBrowser({ articles }: { articles: Article[] }) {
     if (query && !a.title.toLowerCase().includes(query.toLowerCase())) {
       return false;
     }
-    if (filter !== "All") return false;
+    const progress = a.progress ?? 0;
+    if (filter === "Continue reading") {
+      return progress > 0 && progress < COMPLETED_PERCENT;
+    }
+    if (filter === "Completed") return progress >= COMPLETED_PERCENT;
+    if (filter === "Saved") return false;
     return true;
   });
 
@@ -70,7 +76,7 @@ export function LibraryBrowser({ articles }: { articles: Article[] }) {
       ) : (
         <div className="grid grid-cols-3 gap-4">
           {filtered.map((a) => (
-            <ArticleCard key={a.id} article={a} />
+            <ArticleCard key={a.id} article={a} progress={a.progress} />
           ))}
         </div>
       )}

@@ -11,6 +11,9 @@ const DAY_MS = 24 * HOUR_MS;
 
 export const MASTERED_REPETITIONS = 5;
 
+// documents.last_position (0-100 scroll %) at or past this counts as finished.
+export const COMPLETED_PERCENT = 95;
+
 export function reviewStatus(
   nextReviewAt: Date,
   repetitions: number,

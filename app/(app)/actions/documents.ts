@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/app/lib/auth/dal';
 import { redirect } from 'next/navigation';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { extractArticleFromUrl, ExtractError } from '../lib/readability';
 import { recordActivity } from '../lib/streak';
 
@@ -144,4 +144,21 @@ export async function updateDocumentContentAction(
     .where(eq(documents.id, documentId));
 
   return trimmed;
+}
+
+// `percent` is 0-100 scroll progress; stored in documents.last_position.
+export async function saveReadingProgressAction(
+  documentId: string,
+  percent: number,
+) {
+  if (!Number.isFinite(percent)) return;
+  const position = Math.min(100, Math.max(0, Math.round(percent)));
+
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  await db
+    .update(documents)
+    .set({ lastPosition: position, lastReadAt: new Date() })
+    .where(and(eq(documents.id, documentId), eq(documents.userId, user.id)));
 }

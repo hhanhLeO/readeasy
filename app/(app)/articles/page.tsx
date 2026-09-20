@@ -20,6 +20,7 @@ export default async function LibraryPage() {
           id: documents.id,
           title: documents.title,
           content: documents.content,
+          lastPosition: documents.lastPosition,
         })
         .from(documents)
         .where(eq(documents.userId, user.id))
@@ -30,6 +31,7 @@ export default async function LibraryPage() {
     id: doc.id,
     title: doc.title,
     minutes: estimateMinutes(doc.content),
+    progress: doc.lastPosition,
   }));
 
   return (
