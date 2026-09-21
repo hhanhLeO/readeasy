@@ -5,13 +5,6 @@ import { Check, Pencil } from 'lucide-react';
 import { ReadingView } from './reading-view';
 import { updateDocumentContentAction } from '@/app/(app)/actions/documents';
 
-function toParagraphs(text: string): string[] {
-  return text
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-}
-
 export function EditableContent({
   documentId,
   initialContent,
@@ -97,7 +90,7 @@ export function EditableContent({
             Cancel
           </button>
           <span className="text-xs text-text-tertiary">
-            Use #/## for headings · Esc to cancel
+            Markdown supported: # heading, - list, {'>'} quote, `code`, tables, ![alt](img) · Esc to cancel
           </span>
         </div>
         {error && <div className="mt-2 text-[13px] text-danger">{error}</div>}
@@ -120,7 +113,7 @@ export function EditableContent({
       </div>
       <ReadingView
         documentId={documentId}
-        paragraphs={toParagraphs(content)}
+        content={content}
         savedWords={savedWords}
       />
       {saved && (

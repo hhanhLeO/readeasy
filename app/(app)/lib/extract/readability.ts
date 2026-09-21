@@ -1,5 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
+import TurndownService from 'turndown';
+import { gfm } from 'turndown-plugin-gfm';
 
 export class ExtractError extends Error {}
 
@@ -71,29 +73,21 @@ export async function extractArticleFromUrl(
     );
   }
 
-  // Readability's `content` is cleaned-up HTML, not plain text — re-parse it
-  // and pull block-level text so paragraphs stay separated the same way
-  // pasted text is (split on blank lines), matching what /read/[id] expects.
-  // Headings get a markdown-style `#` prefix so the reading view can tell
-  // them apart from body paragraphs without changing how content is stored.
-  const HEADING_PREFIX: Record<string, string> = {
-    H1: '# ',
-    H2: '## ',
-    H3: '### ',
-    H4: '#### ',
-  };
   const articleDom = new JSDOM(article.content);
-  const content = Array.from(
-    articleDom.window.document.querySelectorAll('p, li, h1, h2, h3, h4, blockquote'),
-  )
-    .map((el) => {
-      const text = el.textContent?.replace(/\s+/g, ' ').trim() ?? '';
-      if (!text) return '';
-      const prefix = HEADING_PREFIX[el.tagName];
-      return prefix ? prefix + text : text;
-    })
-    .filter(Boolean)
-    .join('\n\n');
+  // Image/link URLs in the extracted HTML are often relative to the source
+  // page, not to this app — resolve them before conversion.
+  articleDom.window.document.querySelectorAll('img[src]').forEach((img) => {
+    const src = img.getAttribute('src');
+    if (src) img.setAttribute('src', new URL(src, parsed.toString()).toString());
+  });
+  articleDom.window.document.querySelectorAll('a[href]').forEach((a) => {
+    const href = a.getAttribute('href');
+    if (href) a.setAttribute('href', new URL(href, parsed.toString()).toString());
+  });
+
+  const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced', bulletListMarker: '-' });
+  turndown.use(gfm);
+  const content = turndown.turndown(articleDom.window.document.body.innerHTML).trim();
 
   if (!content) {
     throw new ExtractError(

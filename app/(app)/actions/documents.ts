@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@/app/lib/db';
 import { documents } from '@/app/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { extractArticleFromUrl, ExtractError } from '../lib/readability';
+import { extractArticleFromUrl, ExtractError } from '../lib/extract/readability';
 import { recordActivity } from '../lib/streak';
 
 const TITLE_MAX_LENGTH = 80;
