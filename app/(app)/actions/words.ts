@@ -1,9 +1,10 @@
 "use server";
 
-import { eq, and, ilike, desc } from "drizzle-orm";
+import { eq, and, ilike, desc, inArray, sql } from "drizzle-orm";
 import { getCurrentUser } from "@/app/lib/auth/dal";
 import { db } from "@/app/lib/db";
 import { words, reviews, documents } from "@/app/lib/db/schema";
+import { resolveHeadwords } from "@/app/lib/dictionary/lookup";
 
 export async function saveWordAction({
   documentId,
@@ -67,6 +68,8 @@ export async function getSavedMeaningsAction(word: string): Promise<SavedMeaning
   const user = await getCurrentUser();
   if (!user) return [];
 
+  const spellings = [...new Set([word.toLowerCase(), ...(await resolveHeadwords(word))])];
+
   return db
     .select({
       meaning: words.meaning,
@@ -77,6 +80,6 @@ export async function getSavedMeaningsAction(word: string): Promise<SavedMeaning
     })
     .from(words)
     .leftJoin(documents, eq(words.documentId, documents.id))
-    .where(and(eq(words.userId, user.id), ilike(words.word, word)))
+    .where(and(eq(words.userId, user.id), inArray(sql`lower(${words.word})`, spellings)))
     .orderBy(desc(words.createdAt));
 }

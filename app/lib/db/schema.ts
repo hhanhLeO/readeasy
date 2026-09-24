@@ -7,6 +7,8 @@ import {
   integer,
   real,
   date,
+  jsonb,
+  primaryKey
 } from 'drizzle-orm/pg-core';
 
 export const NEXT_MIDNIGHT_VN = sql`((date_trunc('day', now() at time zone 'Asia/Ho_Chi_Minh') + interval '1 day') at time zone 'Asia/Ho_Chi_Minh')`;
@@ -85,6 +87,44 @@ export const reviewLogs = pgTable("review_logs", {
     .defaultNow(),
 });
 
+// Offline dictionary (free-tier lookups, no LLM)
+export const DICTIONARY_POS = [
+  "n", "v", "adj", "adv", "prep", "conj", "pron", "det", "interj", "abbr", "other",
+] as const;
+export type DictionaryPos = (typeof DICTIONARY_POS)[number];
+
+export type DictionarySense = {
+  vi: string;
+  en?: string; // Short English gloss — lets the learner pick the sense that fits their sentence
+  examples?: { en: string; vi: string }[];
+};
+
+// Senses grouped by part of speech, in display order (most common first).
+export type DictionaryPosGroup = {
+  pos: DictionaryPos;
+  senses: DictionarySense[];
+};
+
+export const dictionaryEntries = pgTable("dictionary_entries", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  headword: text("headword").notNull().unique(),
+  ipa: text("ipa"),
+  source: text("source", { enum: ["thichhoc", "ovdp", "custom"] }).notNull(),
+  freqTier: integer("freq_tier"),
+  entries: jsonb("entries").$type<DictionaryPosGroup[]>().notNull(),
+});
+
+export const dictionaryForms = pgTable(
+  "dictionary_forms",
+  {
+    form: text("form").notNull(),
+    entryId: integer("entry_id")
+      .notNull()
+      .references(() => dictionaryEntries.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.form, t.entryId] })]
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
@@ -99,3 +139,6 @@ export type NewReview = typeof reviews.$inferInsert;
 
 export type ReviewLog = typeof reviewLogs.$inferSelect;
 export type NewReviewLog = typeof reviewLogs.$inferInsert;
+
+export type DictionaryEntry = typeof dictionaryEntries.$inferSelect;
+export type NewDictionaryEntry = typeof dictionaryEntries.$inferInsert;

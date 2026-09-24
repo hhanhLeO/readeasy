@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Check } from 'lucide-react';
-import { WordPopup } from './word-popup';
+import { WordPanel } from './word-panel';
 import { TranslationPopup } from './translation-popup';
 
 type WordSelection = {
@@ -347,13 +347,12 @@ export function ReadingView({
       </div>
 
       {selection?.kind === 'word' && (
-        <WordPopup
-          key={selection.id}
+        <WordPanel
+          selectionId={selection.id}
           word={selection.word}
           sentence={selection.sentence}
-          rect={selection.rect}
           documentId={documentId}
-          onDismiss={handleDismiss}
+          onClose={handleDismiss}
           onSaved={handleSaved}
         />
       )}

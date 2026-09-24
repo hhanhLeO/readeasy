@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { getCurrentUser } from '@/app/lib/auth/dal';
 import { db } from '@/app/lib/db';
 import { documents, words } from '@/app/lib/db/schema';
+import { formsOfHeadwords } from '@/app/lib/dictionary/lookup';
 import { EditableContent } from './components/editable-content';
 import { EditableTitle } from './components/editable-title';
 import { ReadingProgressTracker } from './components/reading-progress-tracker';
@@ -49,26 +50,29 @@ export default async function ReadPage({
     .selectDistinct({ word: words.word })
     .from(words)
     .where(eq(words.userId, user.id));
-  const savedWords = savedWordRows.map((row) => row.word.toLowerCase());
+  const savedLemmas = savedWordRows.map((row) => row.word.toLowerCase());
+  const savedWords = [...new Set([...savedLemmas, ...(await formsOfHeadwords(savedLemmas))])];
 
   return (
-    <div className="mx-auto max-w-[680px] px-12 py-12">
-      <div className="mb-4 text-[13px] text-text-secondary">
-        {estimateMinutes(doc.content)} min read
+    <div className="transition-[padding] duration-300 xl:has-[[data-word-panel]]:pr-[360px]">
+      <div className="mx-auto max-w-[680px] px-12 py-12">
+        <div className="mb-4 text-[13px] text-text-secondary">
+          {estimateMinutes(doc.content)} min read
+        </div>
+
+        <ReadingProgressTracker
+          documentId={doc.id}
+          initialPosition={doc.lastPosition}
+        />
+
+        <EditableTitle documentId={doc.id} initialTitle={doc.title} />
+
+        <EditableContent
+          documentId={doc.id}
+          initialContent={doc.content}
+          savedWords={savedWords}
+        />
       </div>
-
-      <ReadingProgressTracker
-        documentId={doc.id}
-        initialPosition={doc.lastPosition}
-      />
-
-      <EditableTitle documentId={doc.id} initialTitle={doc.title} />
-
-      <EditableContent
-        documentId={doc.id}
-        initialContent={doc.content}
-        savedWords={savedWords}
-      />
     </div>
   );
 }

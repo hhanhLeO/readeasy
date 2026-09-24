@@ -132,3 +132,12 @@ body {
     transform: translateY(-4px) scale(0.88);
   }
 }
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
