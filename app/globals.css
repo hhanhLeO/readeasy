@@ -141,3 +141,14 @@ body {
     transform: translateX(0);
   }
 }
+
+@keyframes demo-panel-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
