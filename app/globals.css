@@ -59,7 +59,7 @@ body {
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-all duration-150;
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-all duration-150 disabled:pointer-events-none disabled:opacity-60;
 }
 
 @utility btn-primary {
@@ -72,6 +72,18 @@ body {
 
 @utility btn-ghost {
   @apply btn bg-transparent text-accent hover:bg-accent-tint;
+}
+
+@utility btn-danger {
+  @apply btn border border-danger bg-white text-danger hover:bg-danger/10;
+}
+
+@utility btn-danger-solid {
+  @apply btn bg-danger text-white hover:bg-danger/90;
+}
+
+@utility btn-sm {
+  @apply gap-1.5 px-3 py-1.5 text-[13px];
 }
 
 @utility btn-md {

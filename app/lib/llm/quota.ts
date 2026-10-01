@@ -23,3 +23,15 @@ export async function consumeLlmQuota(userId: string): Promise<boolean> {
 
   return row !== undefined;
 }
+
+export async function getLlmQuota(userId: string): Promise<{ used: number; limit: number }> {
+  const [row] = await db
+    .select({
+      used: sql<number>`case when now() >= ${users.llmCallsResetAt} then 0 else ${users.llmCallsToday} end`,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return { used: Math.min(Number(row?.used ?? 0), DAILY_LLM_CALL_LIMIT), limit: DAILY_LLM_CALL_LIMIT };
+}

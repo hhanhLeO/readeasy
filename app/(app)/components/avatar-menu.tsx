@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { LogOut } from 'lucide-react';
-import { logout } from '@/app/(auth)/actions';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { LogOut, Settings } from "lucide-react";
+import { logout } from "@/app/(auth)/actions";
 
 function initials(name: string) {
   return name.slice(0, 2).toUpperCase();
@@ -19,17 +20,16 @@ export function AvatarMenu({
   useEffect(() => {
     if (!open) return;
     const onClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === "Escape") setOpen(false);
     };
-    document.addEventListener('mousedown', onClickOutside);
-    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener('mousedown', onClickOutside);
-      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
 
@@ -42,7 +42,7 @@ export function AvatarMenu({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={`grid h-8 w-8 cursor-pointer place-items-center rounded-full bg-[linear-gradient(135deg,#0D9488,#6366F1)] text-[13px] font-semibold text-white transition-shadow ${
-          open ? 'shadow-[0_0_0_2px_var(--color-accent-tint)]' : ''
+          open ? "shadow-[0_0_0_2px_var(--color-accent-tint)]" : ""
         }`}
       >
         {initials(user.username)}
@@ -55,22 +55,18 @@ export function AvatarMenu({
         >
           <div className="mb-1.5 border-b border-border px-2.5 pt-2.5 pb-3">
             <div className="text-[13.5px] font-semibold">{user.username}</div>
-            <div className="mt-0.5 text-xs text-text-tertiary">
-              {user.email}
-            </div>
+            <div className="mt-0.5 text-xs text-text-tertiary">{user.email}</div>
           </div>
 
-          {/* Profile & settings — profile page not built yet, uncomment when it lands
-          <button
-            type="button"
+          <Link
+            href="/settings"
             role="menuitem"
             onClick={() => setOpen(false)}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-[13.5px] font-medium text-foreground transition-colors hover:bg-bg-secondary"
           >
-            <User size={15} />
-            Profile & settings
-          </button>
-          */}
+            <Settings size={15} />
+            Settings
+          </Link>
 
           <form action={logout}>
             <button
